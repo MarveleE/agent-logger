@@ -6,7 +6,7 @@
 
 <p align="center">
   <b>Ship app logs to a local daemon, query them from a CLI.</b><br>
-  Built for AI agents that drive <code>xcodebuild</code> / <code>simctl</code> and can't see Xcode's Console.
+  For AI agents that drive apps from the terminal and need their runtime logs.
 </p>
 
 <p align="center">
@@ -45,7 +45,7 @@ That's it. Every iOS launch that bootstraps the SDK appears in `agentlog session
 **Step 1 — depend on the package.** In Xcode: *File → Add Package Dependencies → Add Local…* and point at this repo's `sdks/swift/` folder. Or in `Package.swift`:
 
 ```swift
-.package(url: "https://github.com/<your-org>/agentlogger-swift.git", from: "0.1.0")
+.package(url: "https://github.com/MarveleE/agentlogger.git", from: "0.1.0")
 ```
 
 **Step 2 — bootstrap once at startup.**
