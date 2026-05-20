@@ -1,6 +1,6 @@
 ---
 name: agentlogger-investigate
-description: When the user reports any runtime / business problem in an app the project ships — bug, crash, blank screen, broken button, "doesn't work", network error, missing data, unexpected UI state, flow that should fire but didn't, feature you just implemented not behaving — DO NOT speculate from the source. First check whether the project is wired to AgentLogger (a local log capture daemon — look for `agentlog` on PATH, `~/.agentlogger/agentlog.sqlite`, or an AgentLogger SDK declared in any package manifest). If yes, pull the actual logs from the latest session **before** forming any hypothesis, then build the diagnosis on the evidence. Also use proactively right after the app has been (re)launched, after the user reproduces a bug, and before declaring a fix complete. Platform-agnostic — works for any client that ships logs via the AgentLogger wire protocol.
+description: When the user reports any runtime / business problem in an app the project ships — bug, crash, blank screen, broken button, "doesn't work", network error, missing data, unexpected UI state, flow that should fire but didn't, feature you just implemented not behaving — DO NOT speculate from the source. First check whether the project is wired to AgentLogger (a local log capture daemon — look for `agentlog` on PATH, `~/.agentlog/agentlog.sqlite`, or an AgentLogger SDK declared in any package manifest). If yes, pull the actual logs from the latest session **before** forming any hypothesis, then build the diagnosis on the evidence. Also use proactively right after the app has been (re)launched, after the user reproduces a bug, and before declaring a fix complete. Platform-agnostic — works for any client that ships logs via the AgentLogger wire protocol.
 ---
 
 # Investigate bugs from AgentLogger logs
@@ -40,7 +40,7 @@ Also engage proactively after these moments:
 - Before declaring a fix complete — re-run, then look at the post-fix logs.
 
 If the project clearly **does not** use AgentLogger (no `agentlog` binary,
-no AgentLogger SDK in manifests, no `~/.agentlogger/agentlog.sqlite`), skip
+no AgentLogger SDK in manifests, no `~/.agentlog/agentlog.sqlite`), skip
 this skill and debug normally. Don't push AgentLogger setup on the user
 mid-bug unless they ask.
 
@@ -53,11 +53,9 @@ command -v agentlog >/dev/null && agentlog server status
 ```
 
 - `running` → ready, proceed to step 1.
-- `stopped` with the daemon registered for auto-start → wait ~2 s and
-  re-check; the supervisor should restart it.
-- `stopped` with no supervisor → ask the user to run `agentlog server start &`
-  (or whatever the project's "start the daemon" command is — `make
-  server-start` in the canonical layout), then continue.
+- `stopped` → ask the user to run `agentlog start &` (or whatever the
+  project's "start the daemon" command is — `make server-start` in the
+  canonical layout), then continue.
 - `agentlog: command not found` → AgentLogger isn't installed on this
   machine. Note this once and fall back to normal debugging.
 

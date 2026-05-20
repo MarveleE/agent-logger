@@ -148,7 +148,7 @@ func TestRootHelpListsTopLevelCommands(t *testing.T) {
 	if err != nil {
 		t.Fatalf("err: %v", err)
 	}
-	for _, want := range []string{"sessions", "logs", "tail", "search", "server", "db", "version"} {
+	for _, want := range []string{"sessions", "logs", "tail", "search", "start", "stop", "status", "instances", "db", "version"} {
 		if !strings.Contains(out, want) {
 			t.Errorf("help missing %q\noutput:\n%s", want, out)
 		}
@@ -160,7 +160,7 @@ func TestRootHelpListsTopLevelCommands(t *testing.T) {
 func TestServerStatus_StoppedWhenNoPID(t *testing.T) {
 	e := newTestEnv(t)
 	dataDir := t.TempDir()
-	out, _, err := e.run("server", "status", "--data-dir", dataDir)
+	out, _, err := e.run("status", "--data-dir", dataDir)
 	if err != nil {
 		t.Fatalf("err: %v", err)
 	}
@@ -176,7 +176,7 @@ func TestServerStatus_RunningWhenPIDLive(t *testing.T) {
 	if err := writeFile(pidPath, fmt.Sprintf("%d", currentPID())); err != nil {
 		t.Fatal(err)
 	}
-	out, _, err := e.run("server", "status", "--data-dir", dataDir)
+	out, _, err := e.run("status", "--data-dir", dataDir)
 	if err != nil {
 		t.Fatalf("err: %v", err)
 	}

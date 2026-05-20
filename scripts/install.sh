@@ -9,9 +9,10 @@
 # Steps:
 #   1. Place the agentlog binary at /usr/local/bin/agentlog
 #      (--from-source builds it via `make build`; otherwise downloads release)
-#   2. Install the launchd plist (~/Library/LaunchAgents/com.agentlogger.daemon.plist)
-#      so the server auto-starts on login.
-#   3. Copy the Claude Code skill to ~/.claude/skills/agentlogger.md (best-effort).
+#   2. Copy the Claude Code skills to ~/.claude/skills/ for global agent use.
+#
+# Note: there is no "auto-start on login" — run `agentlog start &` yourself,
+# or wrap it in launchd / systemd / nssm if you want it supervised.
 
 set -euo pipefail
 
@@ -23,7 +24,7 @@ for arg in "$@"; do
         --from-source) FROM_SOURCE=true ;;
         --prefix=*)    PREFIX="${arg#--prefix=}" ;;
         -h|--help)
-            sed -n '2,18p' "$0"
+            sed -n '2,16p' "$0"
             exit 0
             ;;
         *)
@@ -48,26 +49,27 @@ else
     exit 1
 fi
 
-echo "==> registering launchd job"
-"$BIN_PATH" server install
-
-echo "==> installing Claude Code skill (best-effort)"
-SKILL_SRC="$REPO_ROOT/.claude/skills/agentlogger.md"
-SKILL_DST="$HOME/.claude/skills/agentlogger.md"
-if [ -f "$SKILL_SRC" ]; then
-    mkdir -p "$(dirname "$SKILL_DST")"
-    cp "$SKILL_SRC" "$SKILL_DST"
-    echo "  -> $SKILL_DST"
+echo "==> installing Claude Code skills (best-effort)"
+SKILLS_SRC_DIR="$REPO_ROOT/.claude/skills"
+SKILLS_DST_DIR="$HOME/.claude/skills"
+if [ -d "$SKILLS_SRC_DIR" ]; then
+    mkdir -p "$SKILLS_DST_DIR"
+    for skill in "$SKILLS_SRC_DIR"/*/; do
+        [ -d "$skill" ] || continue
+        name="$(basename "$skill")"
+        cp -R "$skill" "$SKILLS_DST_DIR/"
+        echo "  -> $SKILLS_DST_DIR/$name"
+    done
 else
-    echo "  [skip] skill source not found"
+    echo "  [skip] $SKILLS_SRC_DIR not found"
 fi
 
 echo ""
 echo "AgentLogger installed."
-echo "  Binary:       $BIN_PATH"
-echo "  Auto-start:   ~/Library/LaunchAgents/com.agentlogger.daemon.plist"
-echo "  Data:         ~/Library/Application Support/AgentLogger/"
+echo "  Binary:  $BIN_PATH"
+echo "  Data:    ~/.agentlog/  (agentlog.sqlite, agentlog.pid, agentlog.port, server.log)"
 echo ""
-echo "Try:"
-echo "  agentlog server status"
+echo "Next:"
+echo "  agentlog start &       # run the daemon in the background"
+echo "  agentlog status"
 echo "  agentlog --help"

@@ -1,7 +1,6 @@
 // Package daemon provides PID-file based lifecycle helpers for the agentlog
-// server process. Process-control primitives (IsAlive, StopProcess) and the
-// "start on login" mechanism (AutoInstall/Uninstall/Status) are platform
-// specific and live in sibling files guarded by build tags.
+// server process. Process-control primitives (IsAlive, StopProcess) are
+// platform specific and live in sibling files guarded by build tags.
 package daemon
 
 import (
@@ -25,7 +24,8 @@ type Paths struct {
 }
 
 // DefaultDirName is the dotted directory created under $HOME for data + state.
-const DefaultDirName = ".agentlogger"
+// Matches the `agentlog` binary name for consistency.
+const DefaultDirName = ".agentlog"
 
 // DefaultPaths constructs the conventional layout under $HOME (or override).
 // Works on every OS via filepath.Join + os.UserHomeDir.
@@ -143,5 +143,3 @@ var ErrNotRunning = errors.New("server is not running")
 // ErrTimeout indicates a wait operation exceeded its budget.
 var ErrTimeout = errors.New("timed out waiting for stop")
 
-// ErrNotSupported indicates an operation isn't implemented for this platform.
-var ErrNotSupported = errors.New("operation not supported on this platform")

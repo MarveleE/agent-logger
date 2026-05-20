@@ -14,7 +14,7 @@ DEMO_DIR       := demo/AgentLoggerDemo
 DEMO_PROJECT   := $(DEMO_DIR)/AgentLoggerDemo.xcodeproj
 DEMO_SCHEME    := AgentLoggerDemo
 DEMO_BUNDLE_ID := com.agentlogger.demo
-DATA_DIR       := $(HOME)/.agentlogger
+DATA_DIR       := $(HOME)/.agentlog
 PID_FILE       := $(DATA_DIR)/agentlog.pid
 SERVER_LOG     := $(DATA_DIR)/server.log
 DB_FILE        := $(DATA_DIR)/agentlog.sqlite
@@ -30,8 +30,20 @@ GO ?= go
 XCODEBUILD ?= xcodebuild
 SIMCTL ?= xcrun simctl
 
-GIT_SHA := $(shell git rev-parse --short HEAD 2>/dev/null || echo unknown)
-VERSION ?= 0.1.0-dev+$(GIT_SHA)
+# Version resolution — `git describe` takes the wheel.
+#   • on an exact tag (e.g. v0.1.0)      → "0.1.0"
+#   • N commits past last tag             → "0.1.0-3-g6ea9520"
+#   • working tree dirty                  → above + "-dirty"
+#   • no tags yet                         → "0.0.0-dev-g6ea9520"
+# Override at build time:                 `make build VERSION=1.2.3`
+GIT_LAST_TAG  := $(shell git describe --tags --abbrev=0 2>/dev/null)
+GIT_SHA       := $(shell git rev-parse --short=7 HEAD 2>/dev/null || echo unknown)
+GIT_DIRTY     := $(shell git diff --quiet 2>/dev/null || echo "-dirty")
+ifeq ($(GIT_LAST_TAG),)
+    VERSION ?= 0.0.0-dev-g$(GIT_SHA)$(GIT_DIRTY)
+else
+    VERSION ?= $(shell git describe --tags --abbrev=7 --dirty 2>/dev/null | sed 's/^v//')
+endif
 
 # ---------- Help ----------
 .PHONY: help

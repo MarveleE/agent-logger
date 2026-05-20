@@ -17,11 +17,12 @@
 ## Quick start
 
 ```bash
-# 1. Install the daemon (binary → /usr/local/bin, launchd auto-start, agent skill)
+# 1. Install the daemon binary (→ /usr/local/bin) + Claude Code skills
 ./scripts/install.sh --from-source
 
-# 2. Verify
-agentlog server status        # → running
+# 2. Start it
+agentlog start &
+agentlog status               # → running
 
 # 3. Smoke test with the bundled demo (boots iPhone Simulator first if needed)
 open -a Simulator
@@ -31,7 +32,7 @@ make demo-run
 agentlog tail --bundle com.agentlogger.demo
 ```
 
-That's it. The daemon stays up via launchd; every iOS launch that bootstraps the SDK appears in `agentlog sessions list`.
+That's it. Every iOS launch that bootstraps the SDK appears in `agentlog sessions list`.
 
 ---
 
@@ -114,13 +115,14 @@ For full coverage of every xcodebuild / simctl / devicectl flow, see
 ## CLI essentials
 
 ```bash
-agentlog server status                                    # is the daemon up?
+agentlog status                                           # is the daemon up?
 agentlog sessions latest --bundle <id> --json             # newest run
 agentlog logs   --bundle <id> --level error --since 5m    # what blew up?
 agentlog tail   --bundle <id>                             # live stream
 agentlog search "<phrase>" --bundle <id>                  # FTS across history
+agentlog instances list                                   # all running daemons
 agentlog db prune --before 7d                             # housekeeping
-agentlog --help                                           # everything else
+agentlog --help                                           # full cheatsheet
 ```
 
 Append `--json` to any read command for NDJSON output (one record per line).
@@ -129,19 +131,20 @@ Append `--json` to any read command for NDJSON output (one record per line).
 
 ## Running the daemon
 
-Three options, pick one:
+Two options:
 
 | When | How |
 |---|---|
-| **Permanent** (recommended) | `agentlog server install` → registers an auto-start entry on this OS (launchd on macOS, Startup-folder bat on Windows). Restarts on login. |
-| **Development** | `agentlog server start` (foreground; Ctrl-C to stop) or `make server-start` |
-| **Background one-off** | `agentlog server start &` (Unix) / `start "" /B agentlog server start` (Windows) |
+| **Development** | `agentlog start` (foreground; Ctrl-C to stop) or `make server-start` |
+| **Background** | `agentlog start &` (Unix) / `start "" /B agentlog start` (Windows). Wrap in launchd / systemd / nssm yourself if you want it supervised. |
 
-Common flags: `--port 8765`, `--bind 0.0.0.0` (real-device access), `--data-dir <path>`. Stop with `agentlog server stop`, uninstall with `agentlog server uninstall`.
+Common flags: `--port 8765`, `--bind 0.0.0.0` (real-device access), `--data-dir <path>`. Stop with `agentlog stop`.
 
-**Cross-platform**: the daemon ships as a single static-linked binary for **macOS (universal)**, **Windows (amd64/arm64)**, and **Linux (amd64/arm64)**. `make release` produces all of them. Stop semantics: Unix uses SIGTERM, Windows uses a loopback-only HTTP shutdown endpoint — same `agentlog server stop` command on both.
+**Multi-instance**: spin up multiple daemons by giving each its own `--port` + `--data-dir`. `agentlog instances list` shows all live daemons; `agentlog instances stop-all` shuts them down in one go.
 
-Data lives in `~/.agentlogger/` (`agentlog.sqlite`, `agentlog.pid`, `server.log`).
+**Cross-platform**: the daemon ships as a single static-linked binary for **macOS (universal)**, **Windows (amd64/arm64)**, and **Linux (amd64/arm64)**. `make release` produces all of them. Stop semantics: Unix uses SIGTERM, Windows uses a loopback-only HTTP shutdown endpoint — same `agentlog stop` command on both.
+
+Data lives in `~/.agentlog/` (`agentlog.sqlite`, `agentlog.pid`, `agentlog.port`, `server.log`).
 
 ---
 
