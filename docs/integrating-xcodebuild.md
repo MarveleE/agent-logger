@@ -44,7 +44,12 @@ here — env-specific URLs, server tiers, etc.
 Either in your Debug `.xcconfig`:
 
 ```xcconfig
-AGENTLOGGER_ENDPOINT = http://127.0.0.1:8765
+// Use your Mac's LAN IP so the same endpoint works on simulator and real
+// device. Easiest is to leave this empty here and let the xcodebuild CLI
+// pass `AGENTLOGGER_ENDPOINT="http://$(ipconfig getifaddr en0):8765"`
+// on every build (see "Per-build override" below). Or hardcode the IP
+// per-developer in a gitignored Local.xcconfig.
+AGENTLOGGER_ENDPOINT =
 ```
 
 Or directly in the target's Build Settings (User-Defined section).
@@ -102,19 +107,22 @@ For `xcodebuild test`, exactly the same syntax — the test bundle inherits
 the substituted Info.plist value:
 
 ```bash
+MAC_IP="$(ipconfig getifaddr en0 || echo 127.0.0.1)"
 xcodebuild test \
   -workspace MyApp.xcworkspace -scheme MyApp \
   -destination "platform=iOS Simulator,name=iPhone 16" \
-  AGENTLOGGER_ENDPOINT="http://127.0.0.1:8765"
+  AGENTLOGGER_ENDPOINT="http://${MAC_IP}:8765"
 ```
 
 For Xcode IDE: set the build setting in target → Build Settings (or in your
 `.xcconfig`). The IDE picks it up; no env vars on the scheme needed.
 
-## Real-device LAN script
+## Detect Mac's LAN address at build time
 
-Real devices need the Mac's LAN address, which differs per developer.
-Detect at build time and bake it in:
+Both **simulator and real device** connect over the LAN — there's no
+useful distinction. The simulator happens to share the host's loopback,
+but a single LAN-address mental model is simpler and survives switching
+target type without code changes. Detect once and bake in:
 
 ```bash
 #!/usr/bin/env bash

@@ -24,6 +24,7 @@ Common operations (every executable command, grouped by use case):
     agentlog start [--port N] [--bind ADDR] [--data-dir DIR]   Start the daemon in foreground
     agentlog stop  [--data-dir DIR]                            Stop the running daemon (graceful)
     agentlog status [--data-dir DIR]                           Show pid + data dir
+    agentlog dev   [--bundle ID] [--level LV]                  Start daemon + tail in one shot (Ctrl-C stops both)
 
   Multi-instance (multiple daemons on different ports / data-dirs):
     agentlog instances list [--json] [--scan DIR]              List every live daemon on this machine
@@ -78,6 +79,7 @@ func newRoot() *cobra.Command {
 	root.AddCommand(newServerStartCmd())
 	root.AddCommand(newServerStopCmd())
 	root.AddCommand(newServerStatusCmd())
+	root.AddCommand(newDevCmd())
 	root.AddCommand(newInstancesCmd())
 	root.AddCommand(newSessionsCmd())
 	root.AddCommand(newLogsCmd())

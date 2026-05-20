@@ -78,7 +78,7 @@ func newServerStartCmd() *cobra.Command {
 		},
 	}
 	cmd.Flags().IntVar(&port, "port", 8765, "TCP port to bind")
-	cmd.Flags().StringVar(&bind, "bind", "127.0.0.1", "Address to bind (use 0.0.0.0 for real-device support)")
+	cmd.Flags().StringVar(&bind, "bind", "0.0.0.0", "Address to bind. 0.0.0.0 (default) accepts simulator + real-device + LAN connections; use 127.0.0.1 to restrict to local processes only (untrusted networks)")
 	cmd.Flags().StringVar(&dataDir, "data-dir", "", "Override data directory")
 	cmd.Flags().BoolVarP(&quiet, "quiet", "q", false, "Suppress startup messages")
 	return cmd

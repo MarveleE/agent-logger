@@ -50,7 +50,13 @@ targets:
         ENABLE_PREVIEWS: YES
       configs:
         Debug:
-          # Simulator default. xcodebuild CLI args win over this if provided.
+          # Fallback used when nobody overrides at the xcodebuild CLI.
+          # `make demo-run` *does* override with the detected MAC LAN IP so
+          # the same build works on simulator AND any real device on the
+          # same WiFi. This 127 fallback only fires when you open the demo
+          # directly in Xcode and hit Run on the simulator — for your own
+          # apps prefer the Mac's LAN IP from the start (no per-target
+          # branching, no mDNS); see `docs/integrating-xcodebuild.md`.
           AGENTLOGGER_ENDPOINT: http://127.0.0.1:8765
         Release:
           # Empty → AgentLoggerEndpoint resolves to "" → SDK skips Info.plist.

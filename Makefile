@@ -23,7 +23,10 @@ INSTALL_PREFIX ?= /usr/local
 INSTALL_PATH    := $(INSTALL_PREFIX)/bin/$(BIN_NAME)
 
 PORT           ?= 8765
-ENDPOINT       := http://127.0.0.1:$(PORT)
+# MAC_IP picks the first reachable LAN address. Same value works from the
+# iOS Simulator AND a real device on the same WiFi — no per-target branching.
+MAC_IP         := $(shell ipconfig getifaddr en0 2>/dev/null || ipconfig getifaddr en1 2>/dev/null || echo 127.0.0.1)
+ENDPOINT       ?= http://$(MAC_IP):$(PORT)
 SIM_DESTINATION ?= generic/platform=iOS Simulator
 
 GO ?= go
@@ -201,8 +204,8 @@ demo-clean:  ## Remove demo DerivedData
 
 # ---------- Server ops ----------
 .PHONY: server-start
-server-start: build  ## Start server in foreground (Ctrl-C to stop). Bind 0.0.0.0 for real-device access.
-	@$(BIN_DIR)/$(BIN_NAME) server start --port $(PORT) --bind 0.0.0.0
+server-start: build  ## Start daemon in foreground (Ctrl-C to stop)
+	@$(BIN_DIR)/$(BIN_NAME) start --port $(PORT)
 
 .PHONY: server-stop
 server-stop:  ## Stop running server

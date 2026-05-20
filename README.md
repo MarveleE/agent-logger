@@ -89,23 +89,23 @@ In your **Info.plist**, add once:
 <dict><key>NSAllowsLocalNetworking</key><true/></dict>
 ```
 
-Set a default in your Debug `.xcconfig` (or in target Build Settings):
-
-```xcconfig
-AGENTLOGGER_ENDPOINT = http://127.0.0.1:8765
-```
-
-Override per-build for real devices on the LAN:
+Both the **iOS Simulator and real devices on the same WiFi** are LAN clients
+talking to the Mac. Use the same `http://<mac>:8765` for both — detect the
+Mac's LAN address at build time so the build pipeline works for either
+destination unchanged:
 
 ```bash
 MAC_IP="$(ipconfig getifaddr en0 || echo 127.0.0.1)"
 xcodebuild build -scheme MyApp -workspace MyApp.xcworkspace -configuration Debug \
-  -destination "platform=iOS,id=$DEVICE_UDID" \
+  -destination "$DESTINATION" \
   AGENTLOGGER_ENDPOINT="http://${MAC_IP}:8765"
 ```
 
 Build-setting precedence is **CLI > xcconfig > project file**, so each
-developer can override on their own machine without committing IPs to git.
+developer can override on their own machine — gitignore a `Local.xcconfig`
+with your current LAN IP if you want Xcode IDE Run to work without flags.
+The daemon listens on `0.0.0.0` by default; restrict with `--bind 127.0.0.1`
+on untrusted networks.
 
 For full coverage of every xcodebuild / simctl / devicectl flow, see
 [`docs/integrating-xcodebuild.md`](docs/integrating-xcodebuild.md).
