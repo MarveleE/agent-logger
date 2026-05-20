@@ -1,0 +1,44 @@
+# Build artifacts
+/bin/
+*.exe
+*.so
+*.dylib
+
+# Go
+*.test
+*.out
+go.work
+vendor/
+
+# Swift / Xcode
+.build/
+.swiftpm/
+Package.resolved
+*.xcuserstate
+xcuserdata/
+DerivedData/
+.DS_Store
+
+# SQLite
+*.sqlite
+*.sqlite-journal
+*.sqlite-wal
+*.sqlite-shm
+
+# Local config
+.env
+.env.local
+*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Conductor / Claude
+.context/
+.claude/local/
+
+# Existing
+.gitkeep

@@ -1,0 +1,61 @@
+name: AgentLoggerDemo
+
+options:
+  bundleIdPrefix: com.agentlogger
+  deploymentTarget:
+    iOS: "14.0"
+  createIntermediateGroups: true
+
+settings:
+  base:
+    SWIFT_VERSION: "5.5"
+    DEVELOPMENT_TEAM: ""
+    CODE_SIGNING_ALLOWED: NO
+    CODE_SIGNING_REQUIRED: NO
+    CODE_SIGN_IDENTITY: ""
+    IPHONEOS_DEPLOYMENT_TARGET: "14.0"
+    TARGETED_DEVICE_FAMILY: "1,2"
+
+packages:
+  AgentLogger:
+    path: ../../sdks/swift
+
+targets:
+  AgentLoggerDemo:
+    type: application
+    platform: iOS
+    deploymentTarget: "14.0"
+    sources:
+      - path: AgentLoggerDemo
+    info:
+      path: AgentLoggerDemo/Info.plist
+      properties:
+        CFBundleDisplayName: AgentLogger Demo
+        CFBundleShortVersionString: "0.1.0"
+        CFBundleVersion: "1"
+        UILaunchScreen: {}
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: false
+        # Build-time substituted from the AGENTLOGGER_ENDPOINT build setting.
+        # Default lives in `settings.configs.Debug` below; override at the
+        # xcodebuild CLI: `xcodebuild build ... AGENTLOGGER_ENDPOINT=http://10.0.0.42:8765`.
+        AgentLoggerEndpoint: $(AGENTLOGGER_ENDPOINT)
+        # Required to reach the Mac over local network (real devices + iOS 14+).
+        NSLocalNetworkUsageDescription: AgentLogger sends debug logs to your Mac during development.
+        NSAppTransportSecurity:
+          NSAllowsLocalNetworking: true
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.agentlogger.demo
+        ENABLE_PREVIEWS: YES
+      configs:
+        Debug:
+          # Simulator default. xcodebuild CLI args win over this if provided.
+          AGENTLOGGER_ENDPOINT: http://127.0.0.1:8765
+        Release:
+          # Empty → AgentLoggerEndpoint resolves to "" → SDK skips Info.plist.
+          # Combine with bootstrap(.disabled) for production silence.
+          AGENTLOGGER_ENDPOINT: ""
+    dependencies:
+      - package: AgentLogger
+        product: AgentLogger
