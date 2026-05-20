@@ -45,7 +45,7 @@ That's it. Every iOS launch that bootstraps the SDK appears in `agentlog session
 **Step 1 — depend on the package.** In Xcode: *File → Add Package Dependencies → Add Local…* and point at this repo's `sdks/swift/` folder. Or in `Package.swift`:
 
 ```swift
-.package(url: "https://github.com/MarveleE/agentlogger.git", from: "0.1.0")
+.package(url: "https://github.com/MarveleE/agent-logger.git", from: "0.1.0")
 ```
 
 **Step 2 — bootstrap once at startup.**
