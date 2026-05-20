@@ -34,7 +34,7 @@ func newLogsCmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			return renderLogs(cmd.OutOrStdout(), asJSON, logs)
+			return renderLogs(cmd.Context(), cmd.OutOrStdout(), asJSON, logs, newSessionCache(c))
 		},
 	}
 	cmd.Flags().StringVar(&session, "session", "", "Filter by session id")
@@ -80,6 +80,7 @@ func newTailCmd() *cobra.Command {
 			ctx, cancel := signal.NotifyContext(cmd.Context(), syscall.SIGINT, syscall.SIGTERM)
 			defer cancel()
 
+			cache := newSessionCache(c)
 			seed, err := c.QueryLogs(ctx, client.QueryLogsOpts{
 				Session: session, Level: level, Limit: 20, Order: "desc",
 			})
@@ -87,7 +88,7 @@ func newTailCmd() *cobra.Command {
 				return err
 			}
 			for i := len(seed) - 1; i >= 0; i-- {
-				_ = renderOne(out, asJSON, &seed[i])
+				_ = renderOne(out, asJSON, &seed[i], cache.get(ctx, seed[i].SessionID))
 			}
 			var cursor int64
 			if len(seed) > 0 {
@@ -111,7 +112,7 @@ func newTailCmd() *cobra.Command {
 						return err
 					}
 					for i := range batch {
-						_ = renderOne(out, asJSON, &batch[i])
+						_ = renderOne(out, asJSON, &batch[i], cache.get(ctx, batch[i].SessionID))
 						if batch[i].ID > cursor {
 							cursor = batch[i].ID
 						}
@@ -144,7 +145,7 @@ func newSearchCmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			return renderLogs(cmd.OutOrStdout(), asJSON, logs)
+			return renderLogs(cmd.Context(), cmd.OutOrStdout(), asJSON, logs, newSessionCache(c))
 		},
 	}
 	cmd.Flags().StringVar(&bundle, "bundle", "", "Restrict to bundle id")
@@ -153,19 +154,19 @@ func newSearchCmd() *cobra.Command {
 	return cmd
 }
 
-func renderLogs(out io.Writer, asJSON bool, logs []model.LogEntry) error {
+func renderLogs(ctx context.Context, out io.Writer, asJSON bool, logs []model.LogEntry, cache *sessionCache) error {
 	for i := range logs {
-		if err := renderOne(out, asJSON, &logs[i]); err != nil {
+		if err := renderOne(out, asJSON, &logs[i], cache.get(ctx, logs[i].SessionID)); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func renderOne(out io.Writer, asJSON bool, e *model.LogEntry) error {
+func renderOne(out io.Writer, asJSON bool, e *model.LogEntry, sess *model.Session) error {
 	if asJSON {
 		return writeNDJSON(out, e)
 	}
-	fmt.Fprintln(out, formatLogText(e))
+	fmt.Fprintln(out, formatLogText(e, sess))
 	return nil
 }

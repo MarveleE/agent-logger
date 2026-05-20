@@ -108,7 +108,18 @@ this daemon scroll through. Use --bundle to narrow.`,
 			}
 
 			// Cursor-based polling tail across all sessions (or one bundle if filtered).
+			cache := newSessionCache(c)
+			// Anchor cursor to the current tail of the DB so reusing an existing
+			// data dir doesn't dump pre-existing logs on startup. dev is for
+			// watching live activity; use `agentlog logs` to inspect history.
 			var cursor int64
+			if head, err := c.QueryLogs(ctx, client.QueryLogsOpts{
+				Bundle: bundle,
+				Order:  "desc",
+				Limit:  1,
+			}); err == nil && len(head) > 0 {
+				cursor = head[0].ID
+			}
 			ticker := time.NewTicker(interval)
 			defer ticker.Stop()
 			for {
@@ -135,7 +146,7 @@ this daemon scroll through. Use --bundle to narrow.`,
 						continue
 					}
 					for i := range batch {
-						_ = renderOne(out, asJSON, &batch[i])
+						_ = renderOne(out, asJSON, &batch[i], cache.get(ctx, batch[i].SessionID))
 						if batch[i].ID > cursor {
 							cursor = batch[i].ID
 						}

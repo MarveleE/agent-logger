@@ -386,6 +386,9 @@ func TestLogs_DefaultText(t *testing.T) {
 	if !strings.Contains(out, "[Network]") {
 		t.Errorf("missing category: %s", out)
 	}
+	if !strings.Contains(out, "[com.example.app@iPhone Sim]") {
+		t.Errorf("missing bundle@device identifier prefix: %s", out)
+	}
 }
 
 func TestLogs_FilterByLevel(t *testing.T) {
