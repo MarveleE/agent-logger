@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/images/banner.png" alt="AgentLogger Banner" width="800">
+</p>
+
 <h1 align="center">AgentLogger</h1>
 
 <p align="center">
